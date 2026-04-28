@@ -354,6 +354,7 @@ def Transmission (line_tr,ref,save,save_plots_path,plot_title):
 Transmission(usefull_line,Lines_fiber_alone,save=save_im,save_plots_path=save_plots,
              plot_title=Chip_transmission)
 
-
+#pourquoicamarchepas
 
 #%%
+
