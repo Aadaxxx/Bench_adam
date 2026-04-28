@@ -242,7 +242,7 @@ img = img_show(lum,y_label='Px',x_label='Px',plot_title=Fiber_im,
                intensity_min=0,intensity_max=800,
                save=save_im,save_plots_path=save_plots)
 
-#trouver les ligens qui s-nous intersse sur l'image 
+#trouver les lignes qui nous intersse sur l'image 
 usefull_line = find_line(lum,tresh=800,delt=10,x_max=1280,y_max=3000,
                         red_line=True,removed_lines=False,
                         x_label='Px',y_label='Intensity[ADU]',plot_title='Fiber_4',want_to_plot=False)
