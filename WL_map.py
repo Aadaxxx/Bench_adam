@@ -18,27 +18,42 @@ from matplotlib.ticker import MaxNLocator
 ####################################################################################
 #########################       Settings        ####################################
 ####################################################################################
-save_im=False
 
-################ Neon image (line 26) ####################
+################ Neon image  ####################
 #Path
 Im_folder = "Chips_data/Teem_3D/IR/Im_teem3D/neon/Im_neon"
 Dark_folder = "Chips_data/Teem_3D/IR/Im_teem3D/neon/Dark_neon"
 #Title
 img_title='Img_Neon'
 plt_title='Neon_Peaks'
-#Line selection for calibration (line 187)
+#Line selection for calibration 
 treshold_detection_line = 300
 Delta = 4
 #Draw the selected lines in red 
 line_in_red=True
 
-################ Fiber image (line 193) ################
+################ Fiber image ################
 #Path
-a = fits.getdata("Chips_data/Teem_3D/IR/2026_04_09/capture/object/Fiber_4_TM.fits")
+Im = fits.getdata("Chips_data/Teem_3D/IR/2026_04_09/capture/object/Fiber_4_TM.fits")
 dark = fits.getdata("Chips_data/Teem_3D/IR/2026_04_09/capture/dark/Fiber_4_TM_dark.fits")
+#Imshow
+Fiber_im = "Fiber_4"
+Intensity_min=0
+Intensity_max=800
+Save_fiber_im=False
+#Line selection
+treshold_detection_line_fiber = 300
+Delta_fiber = 15
+#plot
+x_max_plot=1280
+y_max_plot=3000
+#Draw the selected lines in red 
+red_line_fiber=True
+#WL Plot
+save_WL_plot=False
+Wl_plot_title="Fiber_4_cal"
 
-################ Reference line (line 233) ################
+################ Reference line for transmission ################
 #Path
 Fiber=fits.getdata("Chips_data/Teem_3D/IR/2026_04_09/capture/object/Fiber_alone_2.fits")
 Fiber_dark=fits.getdata("Chips_data/Teem_3D/IR/2026_04_09/capture/dark/Fiber_alone_dark.fits")
@@ -47,8 +62,7 @@ Fiber_dark=fits.getdata("Chips_data/Teem_3D/IR/2026_04_09/capture/dark/Fiber_alo
 save_plots=("Chips_data/Teem_3D/red_data/Fiber_4_white_src") 
 
 ################ Plots title ################
-Fiber_im = "Fiber_4"
-Fiber_calibrate = "Fiber_4_cal"
+
 Flux_distribution = "Flux_distribution_Input_4"
 Chip_transmission = "Transmission_input_4"
 
@@ -235,16 +249,16 @@ def Mean (Mean_im, Dark_Mean):
 
     return(Im)
 
-lum = Mean(a,dark)
+lum = Mean(Im,dark)
 
 #afficher l'img de la puce que l'on veut calibrer        
 img = img_show(lum,y_label='Px',x_label='Px',plot_title=Fiber_im,
-               intensity_min=0,intensity_max=800,
-               save=save_im,save_plots_path=save_plots)
+               intensity_min=Intensity_min,intensity_max=Intensity_max,
+               save=Save_fiber_im,save_plots_path=save_plots)
 
 #trouver les lignes qui nous intersse sur l'image 
-usefull_line = find_line(lum,tresh=800,delt=10,x_max=1280,y_max=3000,
-                        red_line=True,removed_lines=False,
+usefull_line = find_line(lum,tresh=treshold_detection_line_fiber,delt=Delta_fiber,x_max=x_max_plot,y_max=y_max_plot,
+                        red_line=red_line_fiber,removed_lines=False,
                         x_label='Px',y_label='Intensity[ADU]',plot_title='Fiber_4',want_to_plot=False)
 
  
@@ -262,8 +276,8 @@ def final_plot (line_to_plot,save,save_plots_path,plot_title) :
             plt.savefig(os.path.join(save_plots_path, f"{plot_title}.png"),
                     bbox_inches='tight', pad_inches=0.1)
 
-final_plot(usefull_line,save=save_im,save_plots_path=save_plots,
-           plot_title=Fiber_calibrate)
+final_plot(usefull_line,save=save_WL_plot,save_plots_path=save_plots,
+           plot_title=Wl_plot_title)
 
 ####################################################################################
 ############################    Transmission  ######################################
@@ -288,17 +302,18 @@ def Distribution(save,save_plots_path,plot_title):
     
     # Normalisation par colonne
     col_sum = np.sum(usefull_line, axis=0)
-    
     ratio = np.divide(usefull_line,col_sum)
-    
-    Mean_ratio = np.mean(ratio[:, :1280], axis=1)
 
     plt.figure(figsize=(10,5))
-    plt.plot(Mean_ratio)
-    plt.show()
-    
-    print(Mean_ratio,'akhqgajsfiy')
-    
+    for q in range(ratio.shape[0]):
+        plt.plot(axis_x,ratio[q]*100,label=f"output {q+1}")
+        plt.ylabel('Flux_repartition[%]',fontsize=16)
+        plt.xlabel('Wavelength[nm]',fontsize=16)
+        plt.title('Flux_distribution')
+        plt.axvline(x=1117, color='r', linestyle='--')
+        plt.legend()
+        plt.grid(True)
+    Mean_ratio = np.mean(ratio[:, :1280], axis=1) #Valeur de transmission en % de chaque sortie    
     x = range(1, usefull_line.shape[0] + 1)
     
     colors = ['C0','C1','C2','C3','C4','C5','C6','C7'] 
@@ -327,7 +342,7 @@ def Distribution(save,save_plots_path,plot_title):
     
     return ratio
 
-Intens = Distribution(save=save_im,save_plots_path=save_plots,
+Intens = Distribution(save=False,save_plots_path=save_plots,
                       plot_title=Flux_distribution)
 
 plt.figure(figsize=(10,5))
@@ -351,11 +366,9 @@ def Transmission (line_tr,ref,save,save_plots_path,plot_title):
             plt.savefig(os.path.join(save_plots_path, f"{plot_title}.png"),
                     bbox_inches='tight', pad_inches=0.1)
 
-Transmission(usefull_line,Lines_fiber_alone,save=save_im,save_plots_path=save_plots,
+Transmission(usefull_line,Lines_fiber_alone,save=False,save_plots_path=save_plots,
              plot_title=Chip_transmission)
 
-#pourquoicamarchepas
-#et la ca marche ?
 
 #%%
 
