@@ -34,8 +34,8 @@ line_in_red=True
 
 ################ Fiber image ################
 #Path
-Im = fits.getdata("Chips_data/Teem_3D/IR/2026_04_09/capture/object/Fiber_4_TM.fits")
-dark = fits.getdata("Chips_data/Teem_3D/IR/2026_04_09/capture/dark/Fiber_4_TM_dark.fits")
+Im = fits.getdata("Chips_data/Teem_3D/IR/2026_04_09/capture/object/Fiber_4_TE.fits")
+dark = fits.getdata("Chips_data/Teem_3D/IR/2026_04_09/capture/dark/Fiber_4_TE_dark.fits")
 #Imshow
 Fiber_im = "Fiber_4"
 Intensity_min=0
@@ -57,6 +57,10 @@ Wl_plot_title="Fiber_4_cal"
 #Path
 Fiber=fits.getdata("Chips_data/Teem_3D/IR/2026_04_09/capture/object/Fiber_alone_2.fits")
 Fiber_dark=fits.getdata("Chips_data/Teem_3D/IR/2026_04_09/capture/dark/Fiber_alone_dark.fits")
+#plot for transmission
+exptime=46
+Save_plot_transmission=False
+Chip_transmission = "Transmission_input_4"
 
 ################ Where to save the plots ################
 save_plots=("Chips_data/Teem_3D/red_data/Fiber_4_white_src") 
@@ -64,7 +68,7 @@ save_plots=("Chips_data/Teem_3D/red_data/Fiber_4_white_src")
 ################ Plots title ################
 
 Flux_distribution = "Flux_distribution_Input_4"
-Chip_transmission = "Transmission_input_4"
+
 
 ####################################################################################
 ############################       WL map     ######################################
@@ -298,7 +302,7 @@ Lines_fiber_alone = find_line(Fiber_alone,tresh=2000, delt=15,
 
 ############Interesting line 
 
-def Distribution(save,save_plots_path,plot_title):
+def Distribution(Save,save_plots_path,plot_title):
     
     # Normalisation par colonne
     col_sum = np.sum(usefull_line, axis=0)
@@ -310,6 +314,7 @@ def Distribution(save,save_plots_path,plot_title):
         plt.ylabel('Flux_repartition[%]',fontsize=16)
         plt.xlabel('Wavelength[nm]',fontsize=16)
         plt.title('Flux_distribution')
+        plt.axis([1075,1450,0,40])
         plt.axvline(x=1117, color='r', linestyle='--')
         plt.legend()
         plt.grid(True)
@@ -333,7 +338,7 @@ def Distribution(save,save_plots_path,plot_title):
     
     plt.gca().xaxis.set_major_locator(MaxNLocator(integer=True))
     plt.gca().xaxis.set_major_formatter(lambda x, pos: f"{int(x):d}")
-    if save==True : 
+    if Save==True : 
             plt.savefig(os.path.join(save_plots_path, f"{plot_title}.png"),
                     bbox_inches='tight', pad_inches=0.1)
     plt.show()
@@ -342,13 +347,13 @@ def Distribution(save,save_plots_path,plot_title):
     
     return ratio
 
-Intens = Distribution(save=False,save_plots_path=save_plots,
+Intens = Distribution(Save=False,save_plots_path=save_plots,
                       plot_title=Flux_distribution)
 
 plt.figure(figsize=(10,5))
 
-def Transmission (line_tr,ref,save,save_plots_path,plot_title):
-    line_tr_sum=((np.sum(line_tr,axis=0)/10))
+def Transmission (line_tr,ref,exptime,save_tr,save_plots_path,plot_title):
+    line_tr_sum=((np.sum(line_tr,axis=0)/exptime))
     ref_sum=np.sum(ref,axis=0)
     transmission=(np.divide(line_tr_sum,ref_sum))
     print(transmission,'transmission')
@@ -362,11 +367,11 @@ def Transmission (line_tr,ref,save,save_plots_path,plot_title):
     plt.xlabel('Wavelength[nm]',fontsize=16)
     plt.grid(True)
     plt.legend()
-    if save==True : 
+    if save_tr==True : 
             plt.savefig(os.path.join(save_plots_path, f"{plot_title}.png"),
                     bbox_inches='tight', pad_inches=0.1)
 
-Transmission(usefull_line,Lines_fiber_alone,save=False,save_plots_path=save_plots,
+Transmission(usefull_line,Lines_fiber_alone,exptime,save_tr=Save_plot_transmission,save_plots_path=save_plots,
              plot_title=Chip_transmission)
 
 
