@@ -35,7 +35,7 @@ line_in_red=True
 ################ Fiber image ################
 #Path
 Im = fits.getdata("Chips_data/Teem_3D/IR/2026_04_09/capture/object/Fiber_4_TE.fits")
-dark = fits.getdata("Chips_data/Teem_3D/IR/2026_04_09/capture/dark/Fiber_4_TE_dark.fits")
+dark = fits.getdata("Chips_data/Teem_3D/IR/2026_04_09/capture/dark/Fiber_4_TM_dark.fits")
 #Imshow
 Fiber_im = "Fiber_4"
 Intensity_min=0
@@ -58,12 +58,12 @@ Wl_plot_title="Fiber_4_cal"
 Fiber=fits.getdata("Chips_data/Teem_3D/IR/2026_04_09/capture/object/Fiber_alone_2.fits")
 Fiber_dark=fits.getdata("Chips_data/Teem_3D/IR/2026_04_09/capture/dark/Fiber_alone_dark.fits")
 #plot for transmission
-exptime=46
-Save_plot_transmission=False
+exptime=46.25
+Save_plot_transmission=True
 Chip_transmission = "Transmission_input_4"
 
 ################ Where to save the plots ################
-save_plots=("Chips_data/Teem_3D/red_data/Fiber_4_white_src") 
+save_plots=("Chips_data/Teem_3D/IR/2026_04_09/TM") 
 
 ################ Plots title ################
 
@@ -353,9 +353,9 @@ Intens = Distribution(Save=False,save_plots_path=save_plots,
 plt.figure(figsize=(10,5))
 
 def Transmission (line_tr,ref,exptime,save_tr,save_plots_path,plot_title):
-    line_tr_sum=((np.sum(line_tr,axis=0)/exptime))
+    line_tr_sum=((np.sum(line_tr,axis=0)))
     ref_sum=np.sum(ref,axis=0)
-    transmission=(np.divide(line_tr_sum,ref_sum))
+    transmission=(np.divide(line_tr_sum,ref_sum*exptime))
     print(transmission,'transmission')
     Tr_tot=np.mean(transmission)
     print(Tr_tot*100)
