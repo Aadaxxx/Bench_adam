@@ -35,12 +35,12 @@ line_in_red=True
 ################ Fiber image ################
 #Path
 Im = fits.getdata("Chips_data/Teem_3D/IR/2026_04_09/capture/object/Fiber_4_TE.fits")
-dark = fits.getdata("Chips_data/Teem_3D/IR/2026_04_09/capture/dark/Fiber_4_TM_dark.fits")
+dark = fits.getdata("Chips_data/Teem_3D/IR/2026_04_09/capture/dark/Fiber_4_TE_dark.fits")
 #Imshow
-Fiber_im = "Fiber_4"
+Fiber_im = "Fiber_4_TE"
 Intensity_min=0
 Intensity_max=800
-Save_fiber_im=False
+Save_fiber_im=True
 #Line selection
 treshold_detection_line_fiber = 300
 Delta_fiber = 15
@@ -48,7 +48,7 @@ Delta_fiber = 15
 x_max_plot=1280
 y_max_plot=3000
 #Draw the selected lines in red 
-red_line_fiber=True
+red_line_fiber=False
 #WL Plot
 save_WL_plot=False
 Wl_plot_title="Fiber_4_cal"
@@ -60,15 +60,16 @@ Fiber_dark=fits.getdata("Chips_data/Teem_3D/IR/2026_04_09/capture/dark/Fiber_alo
 #plot for transmission
 exptime=46.25
 Save_plot_transmission=True
-Chip_transmission = "Transmission_input_4"
+Chip_transmission = "Transmission_input_4_TE"
 
 ################ Where to save the plots ################
-save_plots=("Chips_data/Teem_3D/IR/2026_04_09/TM") 
+save_plots=("Chips_data/Teem_3D/IR/2026_04_09/Polarisation/TE") 
 
-################ Plots title ################
+################ Flux distribution ################
 
-Flux_distribution = "Flux_distribution_Input_4"
-
+Flux_distribution = "Flux_distribution_Input_4_TE"
+save_distribut=True
+save_WL=True
 
 ####################################################################################
 ############################       WL map     ######################################
@@ -279,7 +280,7 @@ def final_plot (line_to_plot,save,save_plots_path,plot_title) :
         if save==True : 
             plt.savefig(os.path.join(save_plots_path, f"{plot_title}.png"),
                     bbox_inches='tight', pad_inches=0.1)
-
+        
 final_plot(usefull_line,save=save_WL_plot,save_plots_path=save_plots,
            plot_title=Wl_plot_title)
 
@@ -301,13 +302,9 @@ Lines_fiber_alone = find_line(Fiber_alone,tresh=2000, delt=15,
                               plot_title='Fiber_alone', x_max=1280, y_max=2000,want_to_plot=False)
 
 ############Interesting line 
-
-def Distribution(Save,save_plots_path,plot_title):
-    
-    # Normalisation par colonne
+def Distribution_WL(save_distrib_WL,save_plots_path,plot_title):
     col_sum = np.sum(usefull_line, axis=0)
     ratio = np.divide(usefull_line,col_sum)
-
     plt.figure(figsize=(10,5))
     for q in range(ratio.shape[0]):
         plt.plot(axis_x,ratio[q]*100,label=f"output {q+1}")
@@ -315,9 +312,19 @@ def Distribution(Save,save_plots_path,plot_title):
         plt.xlabel('Wavelength[nm]',fontsize=16)
         plt.title('Flux_distribution')
         plt.axis([1075,1450,0,40])
-        plt.axvline(x=1117, color='r', linestyle='--')
+        #plt.axvline(x=1117, color='r', linestyle='--')
         plt.legend()
         plt.grid(True)
+        if save_distrib_WL==True:
+            plt.savefig(os.path.join(save_plots_path, f"{plot_title}.png"),
+                    bbox_inches='tight', pad_inches=0.1)
+Distribution_WL(save_WL,save_plots,'Distribution_fiber_4_TE')
+
+def Distribution(save_distrib,save_plots_path,plot_title):
+    
+    # Normalisation par colonne
+    col_sum = np.sum(usefull_line, axis=0)
+    ratio = np.divide(usefull_line,col_sum)        
     Mean_ratio = np.mean(ratio[:, :1280], axis=1) #Valeur de transmission en % de chaque sortie    
     x = range(1, usefull_line.shape[0] + 1)
     
@@ -338,7 +345,7 @@ def Distribution(Save,save_plots_path,plot_title):
     
     plt.gca().xaxis.set_major_locator(MaxNLocator(integer=True))
     plt.gca().xaxis.set_major_formatter(lambda x, pos: f"{int(x):d}")
-    if Save==True : 
+    if save_distrib==True : 
             plt.savefig(os.path.join(save_plots_path, f"{plot_title}.png"),
                     bbox_inches='tight', pad_inches=0.1)
     plt.show()
@@ -347,7 +354,7 @@ def Distribution(Save,save_plots_path,plot_title):
     
     return ratio
 
-Intens = Distribution(Save=False,save_plots_path=save_plots,
+Intens = Distribution(save_distrib=save_distribut,save_plots_path=save_plots,
                       plot_title=Flux_distribution)
 
 plt.figure(figsize=(10,5))
