@@ -34,13 +34,15 @@ line_in_red=True
 
 ################ Fiber image ################
 #Path
-Im = fits.getdata("Chips_data/Teem_3D/IR/2026_04_09/capture/object/Fiber_4_TE.fits")
-dark = fits.getdata("Chips_data/Teem_3D/IR/2026_04_09/capture/dark/Fiber_4_TE_dark.fits")
+Fiber_img="Chips_data/Teem_3D/IR/2026_04_09/capture/object/Fiber_4_TM.fits"
+Fiber_img_dark="Chips_data/Teem_3D/IR/2026_04_09/capture/dark/Fiber_4_TM_dark.fits"
+Im = fits.getdata(Fiber_img)
+dark = fits.getdata(Fiber_img_dark)
 #Imshow
-Fiber_im = "Fiber_4_TE"
+Fiber_im = "Fiber_4_TM"
 Intensity_min=0
 Intensity_max=800
-Save_fiber_im=True
+Save_fiber_im=False
 #Line selection
 treshold_detection_line_fiber = 300
 Delta_fiber = 15
@@ -55,21 +57,30 @@ Wl_plot_title="Fiber_4_cal"
 
 ################ Reference line for transmission ################
 #Path
-Fiber=fits.getdata("Chips_data/Teem_3D/IR/2026_04_09/capture/object/Fiber_alone_2.fits")
-Fiber_dark=fits.getdata("Chips_data/Teem_3D/IR/2026_04_09/capture/dark/Fiber_alone_dark.fits")
+Fiber_alone_path="Chips_data/Teem_3D/IR/2026_04_09/capture/object/Fiber_alone_WS_TM.fits"
+Fiber=fits.getdata(Fiber_alone_path)
+Fiber_dark=fits.getdata("Chips_data/Teem_3D/IR/2026_04_09/capture/dark/Fiber_alone_TM_dark.fits")
 #plot for transmission
-exptime=46.25
-Save_plot_transmission=True
-Chip_transmission = "Transmission_input_4_TE"
+Fiber_alone_exptime=fits.open(Fiber_alone_path)
+Fiber_exptime=fits.open(Fiber_img)
+recup_header_ref=Fiber_alone_exptime[1].header
+recup_header_fiber=Fiber_exptime[1].header
+Header_ref=recup_header_ref['EXP_TIME']
+Header_fiber=recup_header_fiber['EXP_TIME']
+exptime=Header_fiber/Header_ref
+print(exptime)
+Save_plot_transmission=False
+Chip_transmission = "Transmission_input_4_TM"
 
 ################ Where to save the plots ################
-save_plots=("Chips_data/Teem_3D/IR/2026_04_09/Polarisation/TE") 
+save_plots=("Chips_data/Teem_3D/IR/2026_04_09/Polarisation/TM") 
 
 ################ Flux distribution ################
 
-Flux_distribution = "Flux_distribution_Input_4_TE"
-save_distribut=True
-save_WL=True
+Flux_distribution = "Flux_distribution_Input_4_TM"
+save_distribut=False
+save_WL=False
+
 
 ####################################################################################
 ############################       WL map     ######################################
@@ -359,13 +370,15 @@ Intens = Distribution(save_distrib=save_distribut,save_plots_path=save_plots,
 
 plt.figure(figsize=(10,5))
 
-def Transmission (line_tr,ref,exptime,save_tr,save_plots_path,plot_title):
+def Transmission (line_tr,ref,exptime_img,save_tr,save_plots_path,plot_title):
     line_tr_sum=((np.sum(line_tr,axis=0)))
     ref_sum=np.sum(ref,axis=0)
-    transmission=(np.divide(line_tr_sum,ref_sum*exptime))
+
+    transmission=(np.divide(line_tr_sum,ref_sum*exptime_img))
     print(transmission,'transmission')
     Tr_tot=np.mean(transmission)
-    print(Tr_tot*100)
+
+
     plt.plot(axis_x, transmission*100, label='Chip transmission = {:.2f}%'.format(Tr_tot*100))
     plt.axhline(y=25, color='r', linestyle='--',label='25%')
     plt.axis([1075,1450,0,50])
